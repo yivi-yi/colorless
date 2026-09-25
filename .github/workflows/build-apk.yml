@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -20,6 +22,7 @@ jobs:
       # 别用 android-actions/setup-android：它内部会执行 `sdkmanager tools`，
       # 新 runner 的 cmdline-tools 已经没有这个包，会直接 exit 1，编译都没开始就失败。
       # runner 镜像本来就带 Android SDK，这里只固定路径 + 过一遍许可。
+      # （这一段的写法是从小行星那边抄的，那边跑得最稳。）
       - name: Set up Android SDK
         run: |
           SDK="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
@@ -43,9 +46,17 @@ jobs:
       - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      # 发群里用这条固定链接，不用登录就能下：
+      # https://github.com/yivi-yi/colorless/releases/tag/latest-apk
+      # 跟小行星一样，每次覆盖同一个 tag 的那个文件，链接永远不变。
+      - name: Publish APK
+        if: success()
+        uses: softprops/action-gh-release@v2
         with:
-          name: colorless-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          tag_name: latest-apk
+          name: colorless-apk
+          body: 自动构建 · Debug APK（每次覆盖，链接不变）
+          files: app/build/outputs/apk/debug/app-debug.apk
+          overwrite_files: true
+          draft: false
+          prerelease: true

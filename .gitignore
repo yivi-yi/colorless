@@ -1,0 +1,24 @@
+# 构建产物：永远不进仓库
+*.apk
+*.aab
+apk-out/
+build/
+.gradle/
+AndroidApp/app/build/
+AndroidApp/.gradle/
+
+# 签名：本地留着，公开仓库里绝对不能有
+keystore/
+*.jks
+*.keystore
+
+# 本地配置与数据
+local.properties
+*.db
+*.db-wal
+*.db-shm
+.env
+
+.idea/
+.DS_Store
+__pycache__/
